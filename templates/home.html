@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>NIELSEN ACCIDENT ANALYSIS.</h1>
+        <p>Your Trusted Partner in Kenya</p>
+        <a href="/about" class="btn">Learn More</a>
+    </div>
+</section>
+
+<section class="services">
+    <div class="service">
+        <img src="{{ url_for('static', filename='nasha.jpg') }}" alt="Data Analysis">
+        <h2>Tradition</h2>
+        <p>Maasai culture, a vibrant tapestry of tradition and unity, showcases diversity. Celebrate their rich heritage, a testament to enduring humanity. 🌍🦓 #MaasaiCulture #HeritageMatters</p>
+    </div>
+    <div class="service">
+        <img src="{{ url_for('static', filename='leila.jpg') }}" alt="Data Visualization">
+        <h2>Sculpture</h2>
+        <p>Timeless artistry carved from heritage, telling stories, and preserving culture. Each piece is a masterpiece, a window into our rich history. 🗿🎨 #Artistry #HeritagePreserved</p>
+    </div>
+    <div class="service">
+        <img src="{{ url_for('static', filename='model.png') }}" alt="Predictive Modeling">
+        <h2>Predictive Modeling</h2>
+        <p>Our experts build predictive models to forecast trends, optimize processes, and make data-driven decisions.</p>
+    </div>
+</section>
+<style>
+    body, h1, h2, p, img {
+    margin: 0;
+    padding: 0;
+}
+    body {
+    background-image: url("static/oldschool_van.jpg");
+    background-size: cover;
+    font-family: Arial, sans-serif;
+}
+
+/* Hero section */
+.hero {
+    background-image: url("static/cool.png");
+    background-size: cover;
+    background-position: center;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-content {
+    text-align: center;
+    color: #fff;
+}
+.hero-content h1 {
+    font-size: 100px;
+
+    margin-bottom: 5px;
+}
+
+.hero-content p {
+    font-size: 30px;
+    margin-bottom: 30px;
+}
+
+.hero-content .btn {
+    display: inline-block;
+    background-color: #a8a463;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.hero-content .btn:hover {
+    background-color: #0056b3;
+}
+
+/* Services section */
+.services {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 50px;
+    margin-right: 20px;
+}
+
+.service {
+    width: 400px;
+    background-color: #fff;
+    background-color: translucent;
+    padding: 60px;
+    margin: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    opacity:0.7;
+    position: relative;
+    transition: transform 0.7s ease-in-out;
+}
+.service:hover {
+            transform: scale(1.2);
+            opacity: 1;
+}
+
+.service img {
+    width: 300px;
+    margin-bottom: 20px;
+}
+
+.service h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.service p {
+    font-size: 16px;
+    color: #777;
+}
+/*Media queries for larger screens */ 
+@media (min-width: 768px){  
+    .hero { height: 300px; /* Adjusted for tablet */ } 
+   .hero-content h1 { font-size: 100px; /* Adjusted for tablet */ } 
+   .hero-content p { font-size: 30px; /* Adjusted for tablet */ } 
+   .service { width: 400px; /* Adjusted for tablet */ } 
+} 
+@media (min-width: 992px) { 
+   .hero { height: 400px; /* Adjusted for desktop */ } 
+   .hero-content h1 { font-size: 140px; /* Adjusted for desktop */ } 
+   .hero-content p { font-size: 40px; /* Adjusted for desktop */ } 
+   .service { width: 400px; /* Unchanged for desktop */ } 
+   } 
+</style>
+{% endblock %}
