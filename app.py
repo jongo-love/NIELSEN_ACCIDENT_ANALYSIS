@@ -11,6 +11,11 @@ def HOME():
 def ABOUT():
     return render_template('about.html')
 
+@app.route('/contact')
+def CONTACT():
+    return render_template('contact.html')
+
+
 
 
 if __name__ == '__main__':
