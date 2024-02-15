@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIELSEN &copf;</title>
+    <link rel="icon" type="image/png" href="static\images.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background">
+        <!-- You can add multiple container divs here with different background images -->
+        <div class="background-item" style="background-image: url('static/pretty.jpg');"></div>
+        <div class="background-item" style="background-image: url('static/selfie2.jpg');"></div>
+        <div class="background-item1" style="background-image: url('static/boyz.jpg');"></div>
+        <div class="background-item2" style="background-image: url('static/f.jpg');"></div>
+        <div class="background-item" style="background-image: url('static/selfie3.jpg');"></div>
+        <div class="background-item" style="background-image: url('static/up.jpg');"></div>
+        <div class="background-item2" style="background-image: url('static/gettyimages-120399175-612x612.jpg');"></div>
+        <div class="background-item" style="background-image: url('static/selfie.jpg');"></div>
+        <div class="background-item3" style="background-image: url('static/d.jpg');"></div>
+    </div>
+
+    <div class="box">
+        <div class="container">
+            <div class="top">
+                <header>Register</header>
+            </div>
+
+            <form method="post">
+                {{ form.hidden_tag() }}
+                <div class="input-field">
+                     {{ form.username(class_="input", placeholder="Username") }}
+                </div>
+                <br>
+                <div class="input-field">
+                    {{ form.password(class_="input", placeholder="Password") }}
+                </div>
+                <br>
+                <div class="input-field">
+                    {{ form.email(class_="input", placeholder="Email") }}
+                </div>
+                <br>
+                <div class="input-field">
+                    {{ form.submit(class_="submit", value="Register") }}
+                </div>
+            </form>
+            <br>
+            {% if error %}
+        <p style="color: black;">{{ error }}</p>
+    {% endif %}
+            <div class="two-col">
+                <div class="one">
+                    <label><a href="/">Have an account? LOGIN</a></label>
+                </div>
+                
+            </div>
+        </div> <!-- Close login-container here -->
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const backgrounds = document.querySelectorAll(".background-item, .background-item1, .background-item2, .background-item3");
+            const backgroundDiv = document.querySelector(".background");
+    
+            function shuffleBackgrounds() {
+                const shuffledBackgrounds = Array.from(backgrounds).sort(() => 0.5 - Math.random());
+                while (backgroundDiv.firstChild) {
+                    backgroundDiv.removeChild(backgroundDiv.firstChild);
+                }
+                shuffledBackgrounds.forEach((background) => {
+                    backgroundDiv.appendChild(background);
+                });
+            }
+    
+            shuffleBackgrounds(); // Initial shuffle
+    
+            setInterval(function() {
+                shuffleBackgrounds();
+            }, 15000); // 15 seconds
+        });
+    </script>
+</body>
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden; /* Prevent scrolling */
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Place the background behind other elements */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Divide the screen into 3 columns */
+    grid-template-rows: repeat(3, 1fr); /* Divide the screen into 3 rows */
+}
+.background-item1{
+    background-size: cover;
+}
+.background-item3{
+    background-size: cover;
+}
+.box {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}
+
+.container {
+    width: 350px;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+    padding: 0 15px 0 15px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    transform: .3s;
+}
+
+span {
+    color: #fff;
+    font-size: small;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 10px 0;
+}
+
+header {
+    color: #fff;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 10px 0;
+}
+
+.input-field .input {
+    height: 45px;
+    width: 87%;
+    border: none;
+    border-radius: 30px;
+    color: #fff;
+    font-size: 15px;
+    padding: 0 0 0 45px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+}
+
+.input-field i {
+    position: relative;
+    top: -33px;
+    left: 17px;
+    color: #fff;
+}
+
+::-webkit-input-placeholder {
+    color: #fff;
+}
+
+.submit {
+    border: none;
+    border-radius: 30px;
+    font-size: 15px;
+    height: 45px;
+    width: 100%;
+    color: black;
+    background: rgba(255, 255, 255, 0.7);
+    transition: .3s;
+    cursor: pointer;
+}
+
+.submit:hover {
+    box-shadow: 1px 5px 7px 1px rgba(0, 0, 0, 0.2);
+}
+
+.two-col {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    color: #fff;
+    font-size: small;
+    margin-top: 10px;
+}
+
+.one {
+    display: flex;
+}
+
+label a {
+    text-decoration: none;
+    color: #fff;
+}
+
+</style>
+</html>
