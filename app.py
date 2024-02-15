@@ -1,11 +1,12 @@
 # LINE 1-10 I'M CREATING ROUTES FOR THE HOME PAGE.
 import time
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, flash, redirect, render_template, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import EmailField, StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
 from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nielsenaccident.db'  # SQLite database file path
@@ -32,6 +33,11 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     email = EmailField('Email', validators=[DataRequired()])
     submit = SubmitField('Register')
+
+class ForgotPasswordForm(FlaskForm):
+    email = EmailField('Email', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
 
 #with app.app_context():
     #db.create_all()
@@ -95,10 +101,28 @@ def REGISTER():
     
     return render_template('register.html', form=form, error=error)
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def FORGOTPASSWORD():
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Generate a password reset token
+            serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+            token = serializer.dumps(user.email, salt='password-reset-salt')
+            # TODO: Send password reset email with the token
+            flash('Password reset email sent. Please check your email.')
+            return redirect(url_for('LOGIN'))
+        else:
+            flash('Email address not found. Please try again.')
+    return render_template('forgot_password.html', form=form)
+
+
 
 
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=3672)
