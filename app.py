@@ -1,15 +1,17 @@
 # LINE 1-10 I'M CREATING ROUTES FOR THE HOME PAGE.
 import time
 from flask_mail import Message,Mail
-from flask import Flask, flash, redirect, render_template, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import EmailField, StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired,EqualTo
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 
 app = Flask(__name__)
+login_manager = LoginManager(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nielsenaccident.db'  # SQLite database file path
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -22,7 +24,7 @@ db = SQLAlchemy(app)
 mail = Mail(app)
 
 # Define the User model/ Creating the USER table in the database.
-class User(db.Model):
+class User(UserMixin,db.Model):
     id = db.Column(db.Integer, primary_key=True,)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
@@ -50,21 +52,51 @@ class ResetPasswordForm(FlaskForm):
     confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
 
+# Configure Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 #with app.app_context():
     #db.create_all()
     #db.session.commit()
 
 @app.route('/home')
+@login_required
 def HOME():
     return render_template('home.html')
 
 @app.route('/about')
+@login_required
 def ABOUT():
     return render_template('about.html')
 
-@app.route('/contact')
+@app.route('/contact',methods=['GET', 'POST'])
+@login_required
 def CONTACT():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        message = request.form['message']
+
+        # Compose the email message
+        sender = app.config['MAIL_DEFAULT_SENDER']  # Assigning the sender
+        msg = Message(subject='New Contact Form Submission',
+                      sender=sender,
+                      recipients=['jongolove01@gmail.com'])
+        msg.body = f'Name: {name}\nEmail: {email}\nMessage: {message}'
+
+        # Send the email
+        mail.send(msg)
+
+        # Redirect to a thank you page or home page after successful submission
+        return redirect(url_for('THANKYOU'))
     return render_template('contact.html')
+
+@app.route('/thank_you')
+@login_required
+def THANKYOU():
+    return render_template('thanks.html')
 
 @app.route('/', methods=['GET', 'POST'])
 def LOGIN():
@@ -80,12 +112,21 @@ def LOGIN():
 
         if user:
             if check_password_hash(user.password, password)and user.email == email:
+                login_user(user)
+                flash('Logged in successfully.')
                 return redirect(url_for('HOME'))
             else:
                 error = 'Incorrect password. Please try again.'
         else:
             error = 'Username not found. Please register.'
     return render_template('login.html', form=form, error=error)
+
+@app.route('/logout')
+@login_required
+def LOGOUT():
+    logout_user()
+    flash('Logged out successfully.')
+    return redirect(url_for('LOGIN'))
 
 @app.route('/register', methods=['GET', 'POST']) 
 def REGISTER():
@@ -133,6 +174,7 @@ def forgot_password():
 
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
+@login_required
 def reset_password(token):
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     try:

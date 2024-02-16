@@ -6,7 +6,7 @@
         <div class="contact-content">
             <div class="contact-form">
                 <h2>CONTACT US</h2>
-                <form action="#" method="POST">
+                <form action="{{ url_for('CONTACT') }}" method="POST" onsubmit="return validateMessage()">
                     <input type="text" id="name" name="name" placeholder="&#x1F464; NAME">
                     <input type="email" id="email" name="email" placeholder="&#x1F4E7; EMAIL" required>
                     <textarea id="message" name="message" rows="5" placeholder="TYPE YOUR MESSAGE"></textarea>
@@ -82,6 +82,8 @@ h2 {
     border: 1px solid rgb(0, 0, 0);
     border-radius: 4px;
     box-sizing: border-box;
+    outline:none;
+    color:#fff;
 }
 
 .contact-form textarea {
@@ -107,8 +109,26 @@ h2 {
 <script>
     function validateMessage() {
         var message = document.getElementById("message").value.toLowerCase();
-        var relevantKeywords = ["accident", "analysis", "inquiry", "web app", "application"];
-
+        var relevantKeywords = ["accident", "analysis", "inquiry", "web app", "application",
+"accident investigation", "incident analysis", "forensic examination",
+"incident reconstruction", "crash data analysis", "traffic collision analysis",
+"incident causation", "root cause analysis", "human factors analysis",
+"vehicle dynamics analysis", "safety analysis", "risk assessment",
+"collision scenario analysis", "data visualization", "statistical analysis",
+"diagrammatic representation", "event sequence analysis", "failure mode analysis",
+"incident response planning", "emergency management", "hazard identification",
+"risk mitigation", "incident reporting", "safety performance evaluation",
+"compliance monitoring", "regulatory compliance", "safety standards assessment",
+"safety culture assessment", "incident trend analysis", "incident management system",
+"incident severity assessment", "incident documentation", "evidence collection",
+"witness statements analysis", "expert testimony evaluation", "case study analysis",
+"legal investigation", "liability assessment", "litigation support",
+"courtroom presentation", "insurance claims analysis", "compensation assessment",
+"policy review", "best practices analysis", "lessons learned review",
+"training program evaluation", "simulation analysis", "virtual reconstruction",
+"3D modeling", "geospatial analysis", "GIS mapping", "data integration",
+"data mining", "machine learning", "artificial intelligence", "predictive modeling",
+"trend analysis", "comparative analysis", "benchmarking", "performance measurement"];
         // Check if the message contains relevant keywords
         for (var i = 0; i < relevantKeywords.length; i++) {
             if (message.includes(relevantKeywords[i])) {
