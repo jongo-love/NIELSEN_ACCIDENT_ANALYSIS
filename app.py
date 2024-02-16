@@ -54,8 +54,6 @@ class ResetPasswordForm(FlaskForm):
     #db.create_all()
     #db.session.commit()
 
-
-
 @app.route('/home')
 def HOME():
     return render_template('home.html')
@@ -156,10 +154,6 @@ def reset_password(token):
         print(e)
         flash('Invalid or expired token. Please try again.')
         return redirect(url_for('forgot_password'))
-
-
-
-
-
+    
 if __name__ == '__main__':
     app.run(debug=True, port=3672)
