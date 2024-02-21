@@ -196,6 +196,47 @@ def reset_password(token):
         print(e)
         flash('Invalid or expired token. Please try again.')
         return redirect(url_for('forgot_password'))
-    
+
+@app.route('/data_analysis')
+@login_required
+def DATALYSIS():
+    return render_template('datalysis.html')
+
+@app.route('/accident_investigation')
+@login_required
+def ACCIDENT_INVESTIGATION():
+    return render_template('accident_investigation.html')
+
+@app.route('/safety_audit_assessment')
+@login_required
+def SAFETYAUDITS_ASSESSMENTS():
+    return render_template('safety_audit_assessment.html')
+
+@app.route('/research_development')
+@login_required
+def RESEARCH_DEVELOPMENT():
+    return render_template('research_development.html')
+
+@app.route('/custom_solution_software')
+@login_required
+def CUSTOM_SOLUTION_SOFTWARE():
+    return render_template('custom_solution_software.html')
+
+@app.route('/safety_equipment')
+@login_required
+def SAFETY_EQUIPMENT():
+    return render_template('safety_equipment.html')
+
+
+@app.route('/events_calendar')
+@login_required
+def EVENTS():
+    return render_template('events_calendar.html')
+
+@app.route('/community_guidlines')
+@login_required
+def COMMUNITY_GUIDLINES():
+    return render_template('community_guidlines.html')
+
 if __name__ == '__main__':
     app.run(debug=True, port=3672)
