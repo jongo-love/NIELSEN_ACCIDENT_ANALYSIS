@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired,EqualTo
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-//ADDING LINES OF CODE FOR MY DATA SCIENCE VISUALIZATIONS.
+
 #IMPORTING LIBRARIES THAT WILL BE USED IN DATA SCIENCE.
 import sqlite3
 import pandas as pd
