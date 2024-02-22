@@ -9,6 +9,12 @@ from wtforms.validators import DataRequired,EqualTo
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
+//ADDING LINES OF CODE FOR MY DATA SCIENCE VISUALIZATIONS.
+#IMPORTING LIBRARIES THAT WILL BE USED IN DATA SCIENCE.
+import sqlite3
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns    
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
@@ -82,8 +88,8 @@ def CONTACT():
         # Compose the email message
         sender = app.config['MAIL_DEFAULT_SENDER']  # Assigning the sender
         msg = Message(subject='New Contact Form Submission',
-                      sender=sender,
-                      recipients=['jongolove01@gmail.com'])
+                    sender=sender,
+                    recipients=['jongolove01@gmail.com'])
         msg.body = f'Name: {name}\nEmail: {email}\nMessage: {message}'
 
         # Send the email
@@ -200,7 +206,42 @@ def reset_password(token):
 @app.route('/data_analysis')
 @login_required
 def DATALYSIS():
-    return render_template('datalysis.html')
+    # Connect to your SQLite database
+    conn = sqlite3.connect('C:\\Users\\students\\NIELSEN_ACCIDENT_ANALYSIS\\instance\\nielsenaccident.db')
+    cursor = conn.cursor()
+    # Execute a query to fetch data from your database
+    cursor.execute('SELECT * FROM us_accidents')
+    
+    # Fetch all rows from the query result
+    data = cursor.fetchall()
+
+    # Close the database connection
+    conn.close()
+    
+    df = pd.DataFrame(data)
+    print('The Dataset Contains, Rows: {:,d} & Columns: {}'.format(df.shape[0], df.shape[1]))
+    
+    # convert the Start_Time & End_Time Variable into Datetime Feature
+    df.Start_Time = pd.to_datetime(df.Start_Time)
+    df.End_Time = pd.to_datetime(df.End_Time)
+    
+    # create a dataframe of city and their corresponding accident cases
+    city_df = pd.DataFrame(df['City'].value_counts()).reset_index().rename(columns={'index':'City', 'City':'Cases'})
+    top_20_cities = pd.DataFrame(city_df.head(20))
+    
+    #visualization: Bar plot of top 10 cities
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='City', y='Cases', data=top_20_cities)
+    plt.title('Top 20 Cities by Accident Cases')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    
+    # Save the plot to a file
+    plot_path = 'static/top_20_cities_plot.png'
+    plt.savefig(plot_path)
+
+    return render_template('datalysis.html', plot_path=plot_path)
+    
 
 @app.route('/accident_investigation')
 @login_required
