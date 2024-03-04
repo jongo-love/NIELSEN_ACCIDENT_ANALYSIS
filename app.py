@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns  
 from matplotlib import cm, patches  
 import matplotlib
+import matplotlib.patches as mpatches
 import geopandas as gpd
 from geopy.geocoders import Nominatim
 from shapely.geometry import Point
@@ -212,6 +213,7 @@ def reset_password(token):
 @login_required
 def DATALYSIS():
     # Connect to your SQLite database
+    # Download DB BROWSER and connect to database.
     conn = sqlite3.connect('C:\\Users\\students\\NIELSEN_ACCIDENT_ANALYSIS\\instance\\nielsenaccident.db')
     cursor = conn.cursor()
     # Execute a query to fetch data from your database
@@ -231,6 +233,7 @@ def DATALYSIS():
     df.Start_Time = pd.to_datetime(df.Start_Time)
     df.End_Time = pd.to_datetime(df.End_Time)
     
+    #CITY ANALYSIS
     # create a dataframe of city and their corresponding accident cases
     city_df = pd.DataFrame(df['City'].value_counts()).reset_index().rename(columns={'index':'City', 'City':'Cases'})
     top_20_cities = pd.DataFrame(city_df.head(20))
@@ -337,7 +340,48 @@ def DATALYSIS():
     map_plot_path = 'static/accident_map_plot.png'
     plt.savefig(map_plot_path)
     
-    return render_template('datalysis.html', plot_path=plot_path, map_plot_path=map_plot_path)
+    #TIMEZONE ANALYSIS.
+    timezone_df = pd.DataFrame(df['Timezone'].value_counts()).reset_index().rename(columns={'index':'Timezone', 'Timezone':'Cases'})
+    fig, ax = plt.subplots(figsize = (10,6), dpi = 80)
+
+    cmap = cm.get_cmap('spring', 4)   
+    clrs = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+
+    ax=sns.barplot(y=timezone_df['Cases'], x=timezone_df['Timezone'], palette='spring')
+
+    total = df.shape[0]
+    for i in ax.patches:
+        ax.text(i.get_x()+0.3, i.get_height()-50000, \
+            '{}%'.format(round(i.get_height()*100/total)), fontsize=15,weight='bold',
+                color='white')
+    
+    plt.ylim(-20000, 700000)
+    plt.title('\nPercentage of Accident Cases for \ndifferent Timezone in US (2016-2020)\n', size=20, color='grey')
+    plt.ylabel('\nAccident Cases\n', fontsize=15, color='grey')
+    plt.xlabel('\nTimezones\n', fontsize=15, color='grey')
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=12)
+    for i in ['top', 'right']:
+        side = ax.spines[i]
+        side.set_visible(False)
+    
+    ax.set_axisbelow(True)
+    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=.3)
+    ax.spines['bottom'].set_bounds(0.005, 3)
+    ax.spines['left'].set_bounds(0, 700000)
+
+    MA = mpatches.Patch(color=clrs[0], label='Timezone with Maximum\n no. of Road Accidents')
+    MI = mpatches.Patch(color=clrs[-1], label='Timezone with Minimum\n no. of Road Accidents')
+    ax.legend(handles=[MA, MI], prop={'size': 10.5}, loc='best', borderpad=1, 
+          labelcolor=[clrs[0], 'grey'], edgecolor='white')
+    plt.show()
+    # Save the third visualization (Timezone) to an image file
+    timezone_plot_path = 'static/timezone_accident_plot.png'
+    plt.savefig(timezone_plot_path)
+    
+    
+    
+    return render_template('datalysis.html', plot_path=plot_path, map_plot_path=map_plot_path, timezone_plot_path=timezone_plot_path)
 #INCLUDE THE DATABASE IMPLEMENTATION FOR THE CODE PRESUME FUNCTIONALITY.
 
 @app.route('/accident_investigation')
