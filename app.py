@@ -14,7 +14,12 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, curren
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns    
+import seaborn as sns  
+from matplotlib import cm, patches  
+import matplotlib
+import geopandas as gpd
+from geopy.geocoders import Nominatim
+from shapely.geometry import Point
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
@@ -218,6 +223,7 @@ def DATALYSIS():
     # Close the database connection
     conn.close()
     
+    #Loading data into the pandas dataframe.
     df = pd.DataFrame(data)
     print('The Dataset Contains, Rows: {:,d} & Columns: {}'.format(df.shape[0], df.shape[1]))
     
@@ -229,19 +235,110 @@ def DATALYSIS():
     city_df = pd.DataFrame(df['City'].value_counts()).reset_index().rename(columns={'index':'City', 'City':'Cases'})
     top_20_cities = pd.DataFrame(city_df.head(20))
     
-    #visualization: Bar plot of top 10 cities
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='City', y='Cases', data=top_20_cities)
-    plt.title('Top 20 Cities by Accident Cases')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    #visualization: Bar plot of top 20 cities
+    fig,ax = plt.subplots(figsize = (12,7), dpi = 80)
+
+    cmap = cm.get_cmap('rainbow', 10)   
+    clrs = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+
+    ax=sns.barplot(y=top_20_cities['Cases'], x=top_20_cities['City'], palette='rainbow')
+
+    total = sum(city_df['Cases'])
+    for i in ax.patches:
+        ax.text(i.get_x()+.03, i.get_height()-2500, \
+            str(round((i.get_height()/total)*100, 2))+'%', fontsize=15, weight='bold',
+                color='white')
+
+    plt.title('\nTop 10 Cities in US with most no. of \nRoad Accident Cases (2016-2020)\n', size=20, color='grey')
+
+    plt.rcParams['font.family'] = "Microsoft JhengHei UI Light"
+    plt.rcParams['font.serif'] = ["Microsoft JhengHei UI Light"]
+
+    plt.ylim(1000, 50000)
+    plt.xticks(rotation=10, fontsize=12)
+    plt.yticks(fontsize=12)
+
+    ax.set_xlabel('\nCities\n', fontsize=15, color='grey')
+    ax.set_ylabel('\nAccident Cases\n', fontsize=15, color='grey')
+
+    for i in ['bottom', 'left']:
+        ax.spines[i].set_color('white')
+        ax.spines[i].set_linewidth(1.5)
     
+    right_side = ax.spines["right"]
+    right_side.set_visible(False)
+    top_side = ax.spines["top"]
+    top_side.set_visible(False)
+
+    ax.set_axisbelow(True)
+    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=.3)
+    MA = patches.Patch(color=clrs[0], label='City with Maximum\n no. of Road Accidents')
+    ax.legend(handles=[MA], prop={'size': 10.5}, loc='best', borderpad=1, 
+          labelcolor=clrs[0], edgecolor='white')
+    plt.show()
     # Save the plot to a file
     plot_path = 'static/top_20_cities_plot.png'
     plt.savefig(plot_path)
-
-    return render_template('datalysis.html', plot_path=plot_path)
     
+    # US States
+    states = gpd.read_file('C:\\Users\\STUDENTS\\Downloads\\States_shapefile-shp')
+
+    def lat(city):
+        address=city
+        geolocator = Nominatim(user_agent="Your_Name")
+        location = geolocator.geocode(address)
+        return (location.latitude)
+
+    def lng(city):
+        address=city
+        geolocator = Nominatim(user_agent="Your_Name")
+        location = geolocator.geocode(address)
+        return (location.longitude)
+
+# list of top 20 cities
+    top_twenty_city_list = list(city_df.City.head(20))
+
+    top_twenty_city_lat_dict = {}
+    top_twenty_city_lng_dict = {}
+    for i in top_twenty_city_list:
+        top_twenty_city_lat_dict[i] = lat(i)
+        top_twenty_city_lng_dict[i] = lng(i)
+    
+    top_20_cities_df = df[df['City'].isin(list(top_20_cities.City))]
+
+    top_20_cities_df['New_Start_Lat'] = top_20_cities_df['City'].map(top_twenty_city_lat_dict)
+    top_20_cities_df['New_Start_Lng'] = top_20_cities_df['City'].map(top_twenty_city_lng_dict)
+    geometry_cities = [Point(xy) for xy in zip(top_20_cities_df['New_Start_Lng'], top_20_cities_df['New_Start_Lat'])]
+    geo_df_cities = gpd.GeoDataFrame(top_20_cities_df, geometry=geometry_cities)
+    fig,ax = plt.subplots(figsize=(15,15))
+    ax.set_xlim([-125,-65])
+    ax.set_ylim([22,55])
+    states.boundary.plot(ax=ax, color='grey');
+
+    colors = ['#e6194B','#f58231','#ffe119','#bfef45','#3cb44b', '#aaffc3','#42d4f4','#4363d8','#911eb4','#f032e6']
+    markersizes = [50+(i*20) for i in range(10)][::-1]
+    for i in range(10):
+        geo_df_cities[geo_df_cities['City'] == top_twenty_city_list[i]].plot(ax=ax, markersize=markersizes[i], 
+                                                                      color=colors[i], marker='o', 
+                                                                      label=top_twenty_city_list[i], alpha=0.7)
+    
+    plt.legend(prop={'size': 13}, loc='best', bbox_to_anchor=(0.5, 0., 0.5, 0.5), edgecolor='white', title="Cities", title_fontsize=15);
+
+    for i in ['bottom', 'top', 'left', 'right']:
+        side = ax.spines[i]
+        side.set_visible(False)
+    
+    plt.tick_params(top=False, bottom=False, left=False, right=False,
+                labelleft=False, labelbottom=False)
+
+    plt.title('\nVisualization of Top 10 Accident Prone Cities in US (2016-2020)', size=20, color='grey')
+    plt.show()
+    # Save the second visualization (the map) to an image file
+    map_plot_path = 'static/accident_map_plot.png'
+    plt.savefig(map_plot_path)
+    
+    return render_template('datalysis.html', plot_path=plot_path, map_plot_path=map_plot_path)
+#INCLUDE THE DATABASE IMPLEMENTATION FOR THE CODE PRESUME FUNCTIONALITY.
 
 @app.route('/accident_investigation')
 @login_required

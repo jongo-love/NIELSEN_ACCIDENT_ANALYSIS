@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analysis</title>
+    <style>
+        .visualization-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .visualization-container > div {
+            flex: 0 0 50%; /* Display two visualizations side by side */
+            margin-bottom: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>City Analysis</h1>
+    <div class="visualization-container">
+        <div>
+            <img src="{{ bar_plot_path }}" alt="Top 20 Cities by Accident Cases">
+        </div>
+        <h1>City Analysis Visualization.</h1>
+        <div>
+            <img src="{{ map_plot_path }}" alt="Visualization of Top 20 Accident-Prone Cities">
+        </div>
+    </div>
+</body>
+</html>
