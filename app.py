@@ -209,6 +209,13 @@ def reset_password(token):
         flash('Invalid or expired token. Please try again.')
         return redirect(url_for('forgot_password'))
 
+#the function of this route is, when the Data Analysis and Visualization service is clicked, the page should return a beautiful
+# dashboard which WILL have buttons for the different kind of visualizations.
+@app.route('/data_analysis')
+def DASHBOARD():
+    return render_template('dashboard.html')
+
+
 @app.route('/data_analysis')
 @login_required
 def DATALYSIS():
