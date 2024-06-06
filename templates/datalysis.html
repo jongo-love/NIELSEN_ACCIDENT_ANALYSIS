@@ -12,32 +12,22 @@
             margin-top: 20px;
         }
 
-        .visualization-container > div {
-            flex: 0 0 50%; /* Display two visualizations side by side */
-            margin-bottom: 20px;
-        }
-
         img {
             max-width: 100%;
             height: auto;
             display: block;
             margin: auto;
         }
+
+        h1 {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <h1>City Analysis</h1>
-    <div class="visualization-container">
-        <div>
-            <img src="{{plot_path }}" alt="Top 20 Cities by Accident Cases">
-        </div>
-        <h1>City Analysis Visualization.</h1>
-        <div>
-            <a href="<img src="{{ map_plot_path }}" alt="Visualization of Top 20 Accident-Prone Cities">"a>VIEW THE CITY ANALYSIS Visualization.</a>
-        </div>
-        <h1>Timezone Analysis.</h1>
-        <div>
-            <img src="{{ timezone_plot_path }}" alt="Timezone accident analysis of the top 20 prone Cities">
+            <h1>City Analysis Visualization</h1>
+            <!-- Update the link to the city analysis visualization -->
+            <a href="{{ plot_path }}">VIEW THE CITY ANALYSIS Visualization</a>
         </div>
     </div>
 </body>
