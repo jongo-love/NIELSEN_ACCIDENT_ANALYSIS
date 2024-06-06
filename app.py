@@ -14,8 +14,9 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, curren
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import seaborn as sns  
-from matplotlib import cm, patches  
+from matplotlib import cm  
 import matplotlib
 import matplotlib.patches as mpatches
 import geopandas as gpd
@@ -211,184 +212,71 @@ def reset_password(token):
 
 #the function of this route is, when the Data Analysis and Visualization service is clicked, the page should return a beautiful
 # dashboard which WILL have buttons for the different kind of visualizations.
-@app.route('/data_analysis')
-def DASHBOARD():
-    return render_template('dashboard.html')
+#@app.route('/data_analysis')
+#def DASHBOARD():
+    #return render_template('dashboard.html')
 
 
 @app.route('/data_analysis')
 @login_required
 def DATALYSIS():
-    # Connect to your SQLite database
-    # Download DB BROWSER and connect to database.
     conn = sqlite3.connect('C:\\Users\\students\\NIELSEN_ACCIDENT_ANALYSIS\\instance\\nielsenaccident.db')
-    cursor = conn.cursor()
-    # Execute a query to fetch data from your database
-    cursor.execute('SELECT * FROM us_accidents')
-    
-    # Fetch all rows from the query result
-    data = cursor.fetchall()
-
-    # Close the database connection
+    df = pd.read_sql_query("SELECT * FROM accidents", conn)
     conn.close()
     
-    #Loading data into the pandas dataframe.
-    df = pd.DataFrame(data)
-    print('The Dataset Contains, Rows: {:,d} & Columns: {}'.format(df.shape[0], df.shape[1]))
+    df['Start_Time'] = pd.to_datetime(df['Start_Time'])
+    df['End_Time'] = pd.to_datetime(df['End_Time'])
     
-    # convert the Start_Time & End_Time Variable into Datetime Feature
-    df.Start_Time = pd.to_datetime(df.Start_Time)
-    df.End_Time = pd.to_datetime(df.End_Time)
+    city_accidents = df['City'].value_counts().reset_index()
+    city_accidents.columns = ['City', 'Accident Cases']
     
-    #CITY ANALYSIS
-    # create a dataframe of city and their corresponding accident cases
-    city_df = pd.DataFrame(df['City'].value_counts()).reset_index().rename(columns={'index':'City', 'City':'Cases'})
-    top_20_cities = pd.DataFrame(city_df.head(20))
+    top_8_cities = city_accidents.head(8)
     
-    #visualization: Bar plot of top 20 cities
-    fig,ax = plt.subplots(figsize = (12,7), dpi = 80)
-
-    cmap = cm.get_cmap('rainbow', 10)   
-    clrs = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
-
-    ax=sns.barplot(y=top_20_cities['Cases'], x=top_20_cities['City'], palette='rainbow')
-
-    total = sum(city_df['Cases'])
+    # Customized visualization
+    fig, ax = plt.subplots(figsize=(12, 7), dpi=80)
+    cmap = cm.get_cmap('rainbow', 8)
+    clrs = [cm.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+    
+    ax = sns.barplot(y=top_8_cities['Accident Cases'], x=top_8_cities['City'], palette=clrs)
+    
+    total = sum(city_accidents['Accident Cases'])
     for i in ax.patches:
-        ax.text(i.get_x()+.03, i.get_height()-2500, \
-            str(round((i.get_height()/total)*100, 2))+'%', fontsize=15, weight='bold',
-                color='white')
-
-    plt.title('\nTop 10 Cities in US with most no. of \nRoad Accident Cases (2016-2020)\n', size=20, color='grey')
-
-    plt.rcParams['font.family'] = "Microsoft JhengHei UI Light"
-    plt.rcParams['font.serif'] = ["Microsoft JhengHei UI Light"]
-
-    plt.ylim(1000, 50000)
+        ax.text(i.get_x() + 0.03, i.get_height() - 2500,
+                f"{round((i.get_height()/total)*100, 2)}%", fontsize=15, weight='bold', color='white')
+    
+    plt.title('Top 10 Cities in US with the Most Number of Road Accident Cases (2016-2020)',
+              size=20, color='grey')
+    plt.ylim(0, 50000)
     plt.xticks(rotation=10, fontsize=12)
     plt.yticks(fontsize=12)
-
+    
     ax.set_xlabel('\nCities\n', fontsize=15, color='grey')
-    ax.set_ylabel('\nAccident Cases\n', fontsize=15, color='grey')
-
-    for i in ['bottom', 'left']:
-        ax.spines[i].set_color('white')
-        ax.spines[i].set_linewidth(1.5)
+    ax.set_ylabel('Accident Cases\n', fontsize=15, color='grey')
     
-    right_side = ax.spines["right"]
+    for spine in ['bottom', 'left']:
+        ax.spines[spine].set_color('white')
+        ax.spines[spine].set_linewidth(1.5)
+    
+    right_side = ax.spines['right']
     right_side.set_visible(False)
-    top_side = ax.spines["top"]
+    top_side = ax.spines['top']
     top_side.set_visible(False)
-
+    
     ax.set_axisbelow(True)
-    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=.3)
-    MA = patches.Patch(color=clrs[0], label='City with Maximum\n no. of Road Accidents')
+    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=0.3)
+    
+    MA = mpatches.Patch(color=clrs[0], label='City with Maximum\n no. of Road Accidents')
     ax.legend(handles=[MA], prop={'size': 10.5}, loc='best', borderpad=1, 
-          labelcolor=clrs[0], edgecolor='white')
-    plt.show()
-    # Save the plot to a file
-    plot_path = 'static/top_20_cities_plot.png'
-    plt.savefig(plot_path)
-    
-    # US States
-    states = gpd.read_file('C:\\Users\\STUDENTS\\Downloads\\States_shapefile-shp')
+              labelcolor=clrs[0], edgecolor='white')
 
-    def lat(city):
-        address=city
-        geolocator = Nominatim(user_agent="Your_Name")
-        location = geolocator.geocode(address)
-        return (location.latitude)
+    custom_plot_path = 'static/custom_plot.png'
+    plt.savefig(custom_plot_path)
+    plt.close()
 
-    def lng(city):
-        address=city
-        geolocator = Nominatim(user_agent="Your_Name")
-        location = geolocator.geocode(address)
-        return (location.longitude)
+    # Pass the data and paths to the template
+    return render_template('datalysis.html', plot_path=custom_plot_path)
 
-# list of top 20 cities
-    top_twenty_city_list = list(city_df.City.head(20))
 
-    top_twenty_city_lat_dict = {}
-    top_twenty_city_lng_dict = {}
-    for i in top_twenty_city_list:
-        top_twenty_city_lat_dict[i] = lat(i)
-        top_twenty_city_lng_dict[i] = lng(i)
-    
-    top_20_cities_df = df[df['City'].isin(list(top_20_cities.City))]
-
-    top_20_cities_df['New_Start_Lat'] = top_20_cities_df['City'].map(top_twenty_city_lat_dict)
-    top_20_cities_df['New_Start_Lng'] = top_20_cities_df['City'].map(top_twenty_city_lng_dict)
-    geometry_cities = [Point(xy) for xy in zip(top_20_cities_df['New_Start_Lng'], top_20_cities_df['New_Start_Lat'])]
-    geo_df_cities = gpd.GeoDataFrame(top_20_cities_df, geometry=geometry_cities)
-    fig,ax = plt.subplots(figsize=(15,15))
-    ax.set_xlim([-125,-65])
-    ax.set_ylim([22,55])
-    states.boundary.plot(ax=ax, color='grey');
-
-    colors = ['#e6194B','#f58231','#ffe119','#bfef45','#3cb44b', '#aaffc3','#42d4f4','#4363d8','#911eb4','#f032e6']
-    markersizes = [50+(i*20) for i in range(10)][::-1]
-    for i in range(10):
-        geo_df_cities[geo_df_cities['City'] == top_twenty_city_list[i]].plot(ax=ax, markersize=markersizes[i], 
-                                                                      color=colors[i], marker='o', 
-                                                                      label=top_twenty_city_list[i], alpha=0.7)
-    
-    plt.legend(prop={'size': 13}, loc='best', bbox_to_anchor=(0.5, 0., 0.5, 0.5), edgecolor='white', title="Cities", title_fontsize=15);
-
-    for i in ['bottom', 'top', 'left', 'right']:
-        side = ax.spines[i]
-        side.set_visible(False)
-    
-    plt.tick_params(top=False, bottom=False, left=False, right=False,
-                labelleft=False, labelbottom=False)
-
-    plt.title('\nVisualization of Top 10 Accident Prone Cities in US (2016-2020)', size=20, color='grey')
-    plt.show()
-    # Save the second visualization (the map) to an image file
-    map_plot_path = 'static/accident_map_plot.png'
-    plt.savefig(map_plot_path)
-    
-    #TIMEZONE ANALYSIS.
-    timezone_df = pd.DataFrame(df['Timezone'].value_counts()).reset_index().rename(columns={'index':'Timezone', 'Timezone':'Cases'})
-    fig, ax = plt.subplots(figsize = (10,6), dpi = 80)
-
-    cmap = cm.get_cmap('spring', 4)   
-    clrs = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
-
-    ax=sns.barplot(y=timezone_df['Cases'], x=timezone_df['Timezone'], palette='spring')
-
-    total = df.shape[0]
-    for i in ax.patches:
-        ax.text(i.get_x()+0.3, i.get_height()-50000, \
-            '{}%'.format(round(i.get_height()*100/total)), fontsize=15,weight='bold',
-                color='white')
-    
-    plt.ylim(-20000, 700000)
-    plt.title('\nPercentage of Accident Cases for \ndifferent Timezone in US (2016-2020)\n', size=20, color='grey')
-    plt.ylabel('\nAccident Cases\n', fontsize=15, color='grey')
-    plt.xlabel('\nTimezones\n', fontsize=15, color='grey')
-    plt.xticks(fontsize=13)
-    plt.yticks(fontsize=12)
-    for i in ['top', 'right']:
-        side = ax.spines[i]
-        side.set_visible(False)
-    
-    ax.set_axisbelow(True)
-    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=.3)
-    ax.spines['bottom'].set_bounds(0.005, 3)
-    ax.spines['left'].set_bounds(0, 700000)
-
-    MA = mpatches.Patch(color=clrs[0], label='Timezone with Maximum\n no. of Road Accidents')
-    MI = mpatches.Patch(color=clrs[-1], label='Timezone with Minimum\n no. of Road Accidents')
-    ax.legend(handles=[MA, MI], prop={'size': 10.5}, loc='best', borderpad=1, 
-          labelcolor=[clrs[0], 'grey'], edgecolor='white')
-    plt.show()
-    # Save the third visualization (Timezone) to an image file
-    timezone_plot_path = 'static/timezone_accident_plot.png'
-    plt.savefig(timezone_plot_path)
-    
-    
-    
-    return render_template('datalysis.html', plot_path=plot_path, map_plot_path=map_plot_path, timezone_plot_path=timezone_plot_path)
 #INCLUDE THE DATABASE IMPLEMENTATION FOR THE CODE PRESUME FUNCTIONALITY.
 
 @app.route('/accident_investigation')
