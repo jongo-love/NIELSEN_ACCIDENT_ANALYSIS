@@ -15,9 +15,9 @@ import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-import seaborn as sns  
-from matplotlib import cm  
+import seaborn as sns    
 import matplotlib
+from matplotlib import cm
 import matplotlib.patches as mpatches
 import geopandas as gpd
 from geopy.geocoders import Nominatim
@@ -220,7 +220,7 @@ def reset_password(token):
 @app.route('/data_analysis')
 @login_required
 def DATALYSIS():
-    conn = sqlite3.connect('C:\\Users\\students\\NIELSEN_ACCIDENT_ANALYSIS\\instance\\nielsenaccident.db')
+    conn = sqlite3.connect('C:\\Users\\user\\NIELSEN_ACCIDENT_ANALYSIS\\instance\\nielsenaccident.db')
     df = pd.read_sql_query("SELECT * FROM accidents", conn)
     conn.close()
     
@@ -233,7 +233,7 @@ def DATALYSIS():
     top_8_cities = city_accidents.head(8)
     
     # Customized visualization
-    fig, ax = plt.subplots(figsize=(12, 7), dpi=80)
+    ax = plt.subplots(figsize=(12, 7), dpi=80)
     cmap = cm.get_cmap('rainbow', 8)
     clrs = [cm.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
     
@@ -246,7 +246,7 @@ def DATALYSIS():
     
     plt.title('Top 10 Cities in US with the Most Number of Road Accident Cases (2016-2020)',
               size=20, color='grey')
-    plt.ylim(0, 50000)
+    plt.ylim(0, 100)
     plt.xticks(rotation=10, fontsize=12)
     plt.yticks(fontsize=12)
     
