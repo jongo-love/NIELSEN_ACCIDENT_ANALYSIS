@@ -15,9 +15,9 @@ import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-import seaborn as sns  
-from matplotlib import cm  
+import seaborn as sns    
 import matplotlib
+from matplotlib import cm
 import matplotlib.patches as mpatches
 import geopandas as gpd
 from geopy.geocoders import Nominatim
@@ -220,20 +220,24 @@ def reset_password(token):
 @app.route('/data_analysis')
 @login_required
 def DATALYSIS():
-    conn = sqlite3.connect('C:\\Users\\students\\NIELSEN_ACCIDENT_ANALYSIS\\instance\\nielsenaccident.db')
+    conn = sqlite3.connect('C:\\Users\\user\\NIELSEN_ACCIDENT_ANALYSIS\\instance\\nielsenaccident.db')
     df = pd.read_sql_query("SELECT * FROM accidents", conn)
     conn.close()
     
     df['Start_Time'] = pd.to_datetime(df['Start_Time'])
     df['End_Time'] = pd.to_datetime(df['End_Time'])
     
+    #CITY ANALYSIS.
+    #CITY ANALYSIS.
+    #CITY ANALYSIS.
+
     city_accidents = df['City'].value_counts().reset_index()
     city_accidents.columns = ['City', 'Accident Cases']
     
     top_8_cities = city_accidents.head(8)
     
     # Customized visualization
-    fig, ax = plt.subplots(figsize=(12, 7), dpi=80)
+    ax = plt.subplots(figsize=(12, 7), dpi=80)
     cmap = cm.get_cmap('rainbow', 8)
     clrs = [cm.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
     
@@ -246,7 +250,7 @@ def DATALYSIS():
     
     plt.title('Top 10 Cities in US with the Most Number of Road Accident Cases (2016-2020)',
               size=20, color='grey')
-    plt.ylim(0, 50000)
+    plt.ylim(0, 500)
     plt.xticks(rotation=10, fontsize=12)
     plt.yticks(fontsize=12)
     
@@ -273,8 +277,109 @@ def DATALYSIS():
     plt.savefig(custom_plot_path)
     plt.close()
 
+    #STATE ANALYSIS.
+    #STATE ANALYSIS.
+    #STATE ANALYSIS.
+
+    #Dictionary of US state codes and their corresponding names
+    us_states = {'MA': 'Massachusetts',
+        'CA': 'California',
+        'UT': 'Utah',
+        'NC': 'North Carolina',
+        'TX': 'Texas',
+        'IL': 'Illinois',
+        'IN': 'Indiana',
+        'VA': 'Virginia',
+        'AZ': 'Arizona',
+        'NY': 'New York',
+        'LA': 'Louisiana',
+        'AL': 'Alabama',
+        'SC': 'South Carolina',
+        'MI': 'Michigan',
+        'OK': 'Oklahoma',
+        'FL': 'Florida',
+        'OH': 'Ohio',
+        'TN': 'Tennessee',
+        'MN': 'Minnesota',
+        'PA': 'Pennsylvania',
+        'NH': 'New Hampshire',
+        'RI': 'Rhode Island',
+        'NM': 'New Mexico',
+        'KY': 'Kentucky',
+        'MO': 'Missouri',
+        'WA': 'Washington',
+        'ME': 'Maine',
+        'GA': 'Georgia',
+        'NJ': 'New Jersey',
+        'OR': 'Oregon',
+        'MD': 'Maryland',
+        'NE': 'Nebraska',
+        'CT': 'Connecticut',
+        'IA': 'Iowa',
+        'CO': 'Colorado',
+        'WI': 'Wisconsin',
+        'DE': 'Delaware',
+        'NV': 'Nevada',
+        'MS': 'Mississippi',
+        'WV': 'West Virginia',
+        'DC': 'District of Columbia',
+        'AR': 'Arkansas',
+        'KS': 'Kansas'}
+
+    # Count the number of accident cases per state
+    state = df['State'].value_counts().reset_index()
+    state.columns =['State', 'Cases']
+
+    # Convert state codes to state names
+    state['State'] = state['State'].apply(lambda x: us_states.get(x, x))
+
+    # Get the top 10 states by accident cases
+    top_10_states = state.head(10)
+
+    # Create the barplot and line plot
+    fig, ax = plt.subplots(figsize=(12, 7), dpi=80)
+    cmap = cm.get_cmap('winter', 10)
+    clrs = [cm.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+
+    ax = sns.barplot(y=top_10_states['Cases'], x=top_10_states['State'], palette=clrs)
+    ax1 = ax.twinx()
+    sns.lineplot(data=top_10_states, marker='o', x='State', y='Cases', color='white', alpha=.8, ax=ax1)
+
+    # Annotate the barplot with case numbers and percentages
+    total = df.shape[0]
+    for i in ax.patches:
+        ax.text(i.get_x() + 0.03, i.get_height() - 2500,
+                f"{int(i.get_height()):,}\n({round((i.get_height() / total) * 100, 1)}%)",
+                fontsize=15, weight='bold', color='white')
+        
+        # Customize the plot's appearance
+    plt.title('Top 10 US States with the Most Number of Road Accident Cases (2016-2020)', size=20, color='grey')
+    ax.set_xlabel('\nStates\n', fontsize=15, color='grey')
+    ax.set_ylabel('\nAccident Cases\n', fontsize=15, color='grey')
+    ax1.axes.yaxis.set_visible(False)
+    plt.xticks(rotation=10, fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.ylim(0, 500000)
+    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=0.3)
+
+    # Customize spines
+    for spine in ['bottom', 'left']:
+        ax.spines[spine].set_color('white')
+        ax.spines[spine].set_linewidth(1.5)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+
+    # Create and add legend
+    MA = mpatches.Patch(color=clrs[0], label='State with Maximum\n no. of Road Accidents')
+    ax.legend(handles=[MA], prop={'size': 10.5}, loc='best', borderpad=1, labelcolor=clrs[0], edgecolor='white')
+
+    state_plot_path = 'static/state_plot.png'
+    plt.savefig(state_plot_path)
+    plt.close()
+
     # Pass the data and paths to the template
-    return render_template('datalysis.html', plot_path=custom_plot_path)
+    return render_template('datalysis.html', plot_path=custom_plot_path, state_path=state_plot_path)
+
 
 
 #INCLUDE THE DATABASE IMPLEMENTATION FOR THE CODE PRESUME FUNCTIONALITY.

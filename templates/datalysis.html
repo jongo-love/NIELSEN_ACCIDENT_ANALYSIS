@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Analysis</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
         .visualization-container {
             display: flex;
             flex-wrap: wrap;
@@ -12,23 +28,60 @@
             margin-top: 20px;
         }
 
-        img {
+        .visualization-container img {
             max-width: 100%;
             height: auto;
             display: block;
-            margin: auto;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .visualization-container img:hover {
+            transform: scale(1.05);
         }
 
         h1 {
             text-align: center;
+            color: #333;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-            <h1>City Analysis Visualization</h1>
-            <!-- Update the link to the city analysis visualization -->
-            <a href="{{ plot_path }}">VIEW THE CITY ANALYSIS Visualization</a>
+    <div class="container">
+        <h1>City Analysis Visualization</h1>
+        <div class="visualization-container">
+            <!-- Replace plot_path with your actual path to the visualization image -->
+            <a href="{{ plot_path }}">
+                <img src="your_image_url.jpg" alt="City Analysis Visualization">
+            </a>
         </div>
+        <a href="{{ plot_path }}">VIEW THE CITY ANALYSIS Visualization</a>
+    </div>
+
+    <div class="container">
+        <h1>State Analysis Visualization</h1>
+        <div class="visualization-container">
+            <!-- Replace plot_path with your actual path to the visualization image -->
+            <a href="{{ state_path }}">
+                <img src="your_image_url.jpg" alt="City Analysis Visualization">
+            </a>
+        </div>
+        <a href="{{ state_path }}">VIEW THE CITY ANALYSIS Visualization</a>
     </div>
 </body>
 </html>
