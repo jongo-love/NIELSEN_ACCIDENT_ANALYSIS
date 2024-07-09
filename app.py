@@ -242,7 +242,7 @@ def DATALYSIS():
     # Customized visualization
     ax = plt.subplots(figsize=(12, 7), dpi=80)
     ax = plt.subplots(figsize=(12, 7), dpi=80)
-    cmap = cm.get_cmap('rainbow', 8)
+    cmap = cm.get_cmap('rainbow', 10)
     clrs = [cm.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
     
     ax = sns.barplot(y=top_8_cities['Accident Cases'], x=top_8_cities['City'], palette=clrs)
@@ -254,7 +254,7 @@ def DATALYSIS():
     
     plt.title('Top 10 Cities in US with the Most Number of Road Accident Cases (2016-2020)',
               size=20, color='grey')
-    plt.ylim(0, 500)
+    plt.ylim(0, 400)
     plt.xticks(rotation=10, fontsize=12)
     plt.yticks(fontsize=12)
     
@@ -341,7 +341,7 @@ def DATALYSIS():
     top_10_states = state.head(10)
 
     # Create the barplot and line plot
-    fig, ax = plt.subplots(figsize=(12, 7), dpi=80)
+    fig, ax = plt.subplots(figsize=(12, 8), dpi=80)
     cmap = cm.get_cmap('winter', 10)
     clrs = [cm.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
 
@@ -381,8 +381,55 @@ def DATALYSIS():
     plt.savefig(state_plot_path)
     plt.close()
 
+    #Timezone analysis
+    #Timezone analysis
+    #Timezone analysis
+
+    timezone_df = pd.DataFrame(df['Timezone'].value_counts()).reset_index()
+    timezone_df.columns = ['Timezone', 'Cases']
+
+    fig, ax = plt.subplots(figsize=(12, 8), dpi=80)
+
+    cmap = cm.get_cmap('spring', 4)
+    clrs = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+
+    ax = sns.barplot(y=timezone_df['Cases'], x=timezone_df['Timezone'], palette='spring')
+
+    total = df.shape[0]
+    for i in ax.patches:
+        percentage = round(i.get_height() * 100 / total)
+        ax.text(i.get_x() + i.get_width() / 2, i.get_height() + total * 0.01,
+                '{}%'.format(percentage), fontsize=15, weight='bold',
+                color='black', ha='center')
+
+    plt.ylim(0, timezone_df['Cases'].max() + total * 0.05)
+    plt.title('Percentage of Accident Cases for Different Timezones in US (2016-2020)', size=20, color='grey')
+    plt.ylabel('Accident Cases', fontsize=15, color='grey')
+    plt.xlabel('Timezones', fontsize=15, color='grey')
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=12)
+
+    for i in ['top', 'right']:
+        side = ax.spines[i]
+        side.set_visible(False)
+
+    ax.set_axisbelow(True)
+    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=.3)
+    ax.spines['bottom'].set_bounds(-0.5, len(timezone_df['Timezone']) - 0.5)
+    ax.spines['left'].set_bounds(0, max(timezone_df['Cases']) * 1.05)
+
+    MA = mpatches.Patch(color=clrs[0], label='Timezone with Maximum\n no. of Road Accidents')
+    MI = mpatches.Patch(color=clrs[-1], label='Timezone with Minimum\n no. of Road Accidents')
+    ax.legend(handles=[MA, MI], prop={'size': 10.5}, loc='best', borderpad=1,
+            labelcolor=[clrs[0], 'grey'], edgecolor='white')
+
+    plt.tight_layout()
+    timezone_plot_path = 'static/timezone_plot.png'
+    plt.savefig(timezone_plot_path)
+    plt.close()
+
     # Pass the data and paths to the template
-    return render_template('datalysis.html', plot_path=custom_plot_path, state_path=state_plot_path)
+    return render_template('datalysis.html', plot_path=custom_plot_path, state_path=state_plot_path, time_path=timezone_plot_path)
 
 
 
