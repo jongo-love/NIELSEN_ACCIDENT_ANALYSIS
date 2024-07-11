@@ -24,6 +24,7 @@ import matplotlib.patches as mpatches
 import geopandas as gpd
 from geopy.geocoders import Nominatim
 from shapely.geometry import Point
+matplotlib.use('Agg')
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
@@ -424,12 +425,72 @@ def DATALYSIS():
             labelcolor=[clrs[0], 'grey'], edgecolor='white')
 
     plt.tight_layout()
+
     timezone_plot_path = 'static/timezone_plot.png'
     plt.savefig(timezone_plot_path)
     plt.close()
 
+
+    #STREET ANALYSIS
+    #STREET ANALYSIS
+    #STREET ANALYSIS
+
+    street_df = pd.DataFrame(df['Street'].value_counts()).reset_index()
+    street_df.columns = ['Street', 'Cases']
+
+    top_ten_streets_df = street_df.head(10)
+
+    fig, ax = plt.subplots(figsize=(12, 6), dpi=80)
+
+    cmap = cm.get_cmap('gnuplot2', 10)
+    clrs = [matplotlib.colors.rgb2hex(cmap(i)) for i in range(cmap.N)]
+
+    ax = sns.barplot(y=top_ten_streets_df['Cases'], x=top_ten_streets_df['Street'], palette='gnuplot2')
+    ax1 = ax.twinx()
+    sns.lineplot(data=top_ten_streets_df, marker='o', x='Street', y='Cases', color='white', alpha=.8)
+
+    total = df.shape[0]
+    for i in ax.patches:
+        ax.text(i.get_x() + i.get_width() / 2, i.get_height() + total * 0.01,
+                '{:,d}'.format(int(i.get_height())), fontsize=12.5, weight='bold',
+                color='black', ha='center')
+
+    ax.set_ylim(0, top_ten_streets_df['Cases'].max() + total * 0.05)
+    ax1.set_ylim(0, top_ten_streets_df['Cases'].max() + total * 0.1)
+    plt.title('\nTop 10 Accident Prone Streets in US (2016-2020)\n', size=20, color='grey')
+
+    ax1.axes.yaxis.set_visible(False)
+    ax.set_xlabel('\nStreet\n', fontsize=15, color='grey')
+    ax.set_ylabel('\nAccident Cases\n', fontsize=15, color='grey')
+
+    for i in ['top', 'right']:
+        side1 = ax.spines[i]
+        side1.set_visible(False)
+        side2 = ax1.spines[i]
+        side2.set_visible(False)
+
+    ax.set_axisbelow(True)
+    ax.grid(color='#b2d6c7', linewidth=1, axis='y', alpha=.3)
+
+    ax.spines['bottom'].set_bounds(-0.5, len(top_ten_streets_df['Street']) - 0.5)
+    ax.spines['left'].set_bounds(0, max(top_ten_streets_df['Cases']) * 1.05)
+    ax1.spines['bottom'].set_bounds(-0.5, len(top_ten_streets_df['Street']) - 0.5)
+    ax1.spines['left'].set_bounds(0, max(top_ten_streets_df['Cases']) * 1.05)
+    ax.tick_params(axis='both', which='major', labelsize=12)
+
+    MA = mpatches.Patch(color=clrs[1], label='Street with Maximum\n no. of Road Accidents')
+    MI = mpatches.Patch(color=clrs[-2], label='Street with Minimum\n no. of Road Accidents')
+    ax.legend(handles=[MA, MI], prop={'size': 10.5}, loc='best', borderpad=1,
+            labelcolor=[clrs[1], 'grey'], edgecolor='white')
+
+    plt.tight_layout()
+    street_plot_path = 'static/street_plot.png'
+    plt.savefig(street_plot_path)
+    plt.close()
+
+
     # Pass the data and paths to the template
-    return render_template('datalysis.html', plot_path=custom_plot_path, state_path=state_plot_path, time_path=timezone_plot_path)
+    return render_template('datalysis.html',street_path=street_plot_path ,plot_path=custom_plot_path, state_path=state_plot_path, time_path=timezone_plot_path)
 
 
 
