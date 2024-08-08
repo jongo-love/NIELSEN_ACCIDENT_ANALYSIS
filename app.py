@@ -1,7 +1,9 @@
 # LINE 1-10 I'M CREATING ROUTES FOR THE HOME PAGE.
+import os
+from geopy.exc import GeocoderTimedOut
 import time
 from flask_mail import Message,Mail
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import EmailField, StringField, PasswordField, SubmitField
@@ -24,6 +26,8 @@ import matplotlib.patches as mpatches
 import geopandas as gpd
 from geopy.geocoders import Nominatim
 from shapely.geometry import Point
+from docx import Document
+from docx.shared import Inches
 matplotlib.use('Agg')
 
 app = Flask(__name__)
@@ -190,7 +194,6 @@ def forgot_password():
 
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
-@login_required
 def reset_password(token):
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     try:
@@ -382,6 +385,71 @@ def DATALYSIS():
     plt.savefig(state_plot_path)
     plt.close()
 
+    #Map analysis
+    #Map analysis
+    #Map analysis
+    # Initialize the geolocator
+    # Initialize the geolocator
+    geolocator = Nominatim(user_agent="Your_Name")
+
+    def get_lat_lng(city, retries=3, wait_time=2):
+        for i in range(retries):
+            try:
+                location = geolocator.geocode(city, timeout=100)
+                return (location.latitude, location.longitude) if location else (None, None)
+            except GeocoderTimedOut:
+                if i < retries - 1:
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    return (None, None)
+
+    # Get the latitude and longitude for the top 10 cities
+    top_10_cities = city_accidents.head(10)['City']
+    city_coordinates = {city: get_lat_lng(city) for city in top_10_cities}
+
+    # Filter out cities where coordinates could not be found
+    city_coordinates = {city: coords for city, coords in city_coordinates.items() if None not in coords}
+
+    # Create a DataFrame for the top 10 cities with their coordinates
+    top_10_cities_df = df[df['City'].isin(city_coordinates.keys())]
+    top_10_cities_df['Latitude'] = top_10_cities_df['City'].map(lambda city: city_coordinates[city][0])
+    top_10_cities_df['Longitude'] = top_10_cities_df['City'].map(lambda city: city_coordinates[city][1])
+
+    # Create a GeoDataFrame
+    geometry = [Point(xy) for xy in zip(top_10_cities_df['Longitude'], top_10_cities_df['Latitude'])]
+    geo_df = gpd.GeoDataFrame(top_10_cities_df, geometry=geometry)
+
+    # Load the US state boundaries
+    world = gpd.read_file('ne_110m_admin_0_countries.shp')
+    us_states = world[world['NAME'] == 'United States of America']
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(15, 15))
+    ax.set_xlim([-125, -65])
+    ax.set_ylim([22, 55])
+    us_states.boundary.plot (ax=ax, color='grey', linewidth=1)
+
+    # Define colors and sizes for the top 10 cities
+    colors = ['#e6194B', '#f58231', '#ffe119', '#bfef45', '#3cb44b', '#aaffc3', '#42d4f4', '#4363d8', '#911eb4', '#f032e6']
+    sizes = [100 + (i * 50) for i in range(10)]
+
+    # Plot each city with a different color and size
+    for i, city in enumerate(top_10_cities):
+        city_df = geo_df[geo_df['City'] == city]
+        city_df.plot(ax=ax, marker='o', color=colors[i], markersize=sizes[i], label=city, alpha=0.7)
+
+    plt.legend(prop={'size': 13}, loc='best', bbox_to_anchor=(1.05, 1), edgecolor='white', title="Cities", title_fontsize=15)
+    plt.title('Visualization of Top 10 Accident Prone Cities in US (2016-2020)', size=20, color='grey')
+    plt.axis('off')
+    plt.show()
+
+    # Save the plot
+    map_plot_path = 'static/map_plot.png'
+    plt.savefig(map_plot_path, bbox_inches='tight')
+    plt.close()
+
+
     #Timezone analysis
     #Timezone analysis
     #Timezone analysis
@@ -490,11 +558,102 @@ def DATALYSIS():
 
 
     # Pass the data and paths to the template
-    return render_template('datalysis.html',street_path=street_plot_path ,plot_path=custom_plot_path, state_path=state_plot_path, time_path=timezone_plot_path)
+    return render_template('datalysis.html',street_path=street_plot_path ,plot_path=custom_plot_path, state_path=state_plot_path, time_path=timezone_plot_path , map_path=map_plot_path)
 
 
 
 #INCLUDE THE DATABASE IMPLEMENTATION FOR THE CODE PRESUME FUNCTIONALITY.
+
+#INSIGHT.
+def city_cases_percentage(city_accidents, val, operator):
+    if operator == '<':
+        res = city_accidents[city_accidents['Cases'] < val].shape[0]
+    elif operator == '>':
+        res = city_accidents[city_accidents['Cases'] > val].shape[0]
+    elif operator == '=':
+        res = city_accidents[city_accidents['Cases'] == val].shape[0]
+    percentage = round(res * 100 / city_accidents.shape[0], 2)
+    print(f'{res} Cities, {percentage}%')
+    return f'{res} Cities, {percentage}%'
+
+def create_report(title, insights, image_path, output_path):
+    doc = Document()
+    # Add title
+    doc.add_heading(title, 0)
+    
+    # Add insights
+    doc.add_heading('Insights', level=1)
+    for insight in insights:
+        doc.add_paragraph(insight)
+    
+    # Add visualization
+    doc.add_heading('Visualization', level=1)
+    doc.add_paragraph('Visualization of the data:')
+    doc.add_picture(image_path, width=Inches(6))
+    
+    
+    doc.save(output_path)
+    print(f"Report saved as {output_path}")
+
+@app.route('/download-report', methods=['GET'])
+@login_required
+def generate_report():
+    # Define visualizations to generate
+    visualizations = [
+        {
+            'title': 'Top 10 Accident-Prone Cities in US',
+            'insights': [
+                "In this Dataset, we have the records of total 10,657 Cities.",
+                "1. 11% (1,167 Cities) cities in US, have only 1 accident record in past 5 years.",
+                "2. Around 81% (8,682 Cities) of all cities in US, have less than 100 total no. of road accidents.",
+                "3. 97.64% (10,406 Cities) cities in US, have the road accident records (2016-2020), less than 1,000.",
+                "4. There are 251 Cities (2.36%) in US, which have more than 1,000 total no. of road accidents in past 5 years.",
+                "5. 40 Cities (0.38%) in US, have more than 5,000 road accident records.",
+                "6. Only 13 Cities (0.12%) in US, have more than 10,000 road accident records."
+            ],
+            'image_path': 'static/map_plot.png',  # Ensure this path is correct
+            'output_path': 'static/Top_10_Accident_Prone_Cities_Report.docx'
+        },
+        {
+            'title': 'Top 10 Cities in US',
+            'insights': [
+                "In this Dataset, we have the records of total 10,657 Cities.",
+                "Los Angeles is the city with highest (2.64%) no. of road accidents in US (2016-2020)."
+                "Miami is the city with 2nd highest (2.39%) no. of road accidents in US (2016-2020)."
+                "Around 14%' accident records of past 5 years are only from these 10 cities out of 10,657 cities in US (as per the dataset)."
+                "In past 5 years (2016-2020) yearly 7,997 road accidents (average) happened in Los Angeles."
+                "In Los Angeles averagely in every 12 hours 11 accidents occurred"
+            ],
+            'image_path': 'static/custom_plot.png',  # Ensure this path is correct
+            'output_path': 'static/Top_10_Accident Cities_Report.docx'
+        },
+        #add more reports.
+    ]
+
+    # Generate reports
+    for viz in visualizations:
+        create_report(viz['title'], viz['insights'], viz['image_path'], viz['output_path'])
+
+
+@app.route('/download-map-report', methods=['GET'])
+@login_required
+def download_map_report():
+    map_report_path = 'static/Top_10_Accident_Prone_Cities_Report.docx'
+    
+    if os.path.exists(map_report_path):
+        return send_file(map_report_path, as_attachment=True)
+    else:
+        return "Report not found", 404
+
+@app.route('/download-city-report', methods=['GET'])
+@login_required
+def download_city_report():
+    city_report_path = 'static/Top_10_Cities_Report.docx'
+    
+    if os.path.exists(city_report_path):
+        return send_file(city_report_path, as_attachment=True)
+    else:
+        return "Report not found", 404
 
 @app.route('/accident_investigation')
 @login_required

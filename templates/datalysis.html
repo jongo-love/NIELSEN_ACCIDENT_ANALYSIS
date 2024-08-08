@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: beige;
             margin: 0;
             padding: 0;
         }
@@ -17,7 +17,7 @@
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
+            background-image: url("cactus.jpg");
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
@@ -70,10 +70,22 @@
         <div class="visualization-container">
             <!-- Replace plot_path with your actual path to the visualization image -->
             <a href="{{ plot_path }}">
-                <img src="your_image_url.jpg" alt="City Analysis Visualization">
+                <img src="static\newyork.jpg" alt="City Analysis Visualization">
             </a>
         </div>
         <a href="{{ plot_path }}">VIEW THE CITY ANALYSIS Visualization</a>
+    </div>
+
+    <div class="container">
+        <h1>Maps Analysis Visualization</h1>
+        <div class="visualization-container">
+            <!-- Replace plot_path with your actual path to the visualization image -->
+            <a href="{{ map_path }}">
+                <img src="static\city55.jpg" alt="Map Analysis Visualization">
+            </a>
+        </div>
+        <a href="{{ map_path }}">VIEW THE MAP ANALYSIS Visualization</a>
+        <a href="{{ url_for('download_map_report') }}" download>Download Top 10 Accident-Prone Cities Report</a>
     </div>
 
     <div class="container">
@@ -81,7 +93,7 @@
         <div class="visualization-container">
             <!-- Replace plot_path with your actual path to the visualization image -->
             <a href="{{ state_path }}">
-                <img src="your_image_url.jpg" alt="City Analysis Visualization">
+                <img src="static\land.jpg" alt="City Analysis Visualization">
             </a>
         </div>
         <a href="{{ state_path }}">VIEW THE STATE ANALYSIS Visualization</a>
@@ -92,7 +104,7 @@
         <div class="visualization-container">
             <!-- Replace plot_path with your actual path to the visualization image -->
             <a href="{{ time_path }}">
-                <img src="your_image_url.jpg" alt="City Analysis Visualization">
+                <img src="static/chi.jpg" alt="City Analysis Visualization">
             </a>
         </div>
         <a href="{{ time_path }}">VIEW THE TIMEZONE ANALYSIS Visualization</a>
@@ -103,7 +115,7 @@
         <div class="visualization-container">
             <!-- Replace plot_path with your actual path to the visualization image -->
             <a href="{{ street_path }}">
-                <img src="your_image_url.jpg" alt="City Analysis Visualization">
+                <img src="static\111.jpg" alt="City Analysis Visualization">
             </a>
         </div>
         <a href="{{ street_path }}">VIEW THE STREET ANALYSIS Visualization</a>
