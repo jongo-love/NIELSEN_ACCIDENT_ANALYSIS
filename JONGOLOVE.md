@@ -1,5 +1,5 @@
 PROJECT TITLE: NIELSEN ACCIDENT ANALYSIS.
-It is advicable to create a github account for ease of code tracking.You can also come up with your own READ.me file for better understanding of your code to other interested profiles.
+It is advicable to create a github account for ease of code tracking.You can also come up with your own README.md file for better understanding of your code to other interested profiles.
 It is also advicable to listen to music while coding to trick your brain into relaxation.LOL. Preferrably 90s music.
 
 INTRODUCTION AND SETUP.
